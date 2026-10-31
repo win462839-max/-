@@ -1,0 +1,30 @@
+# -*- coding: utf-8 -*-
+"""
+把本文件复制一份，改名为 keys.local.py，然后填入你的 Key。
+
+为什么要单独一个文件：
+  keys.local.py 已加入 .gitignore，永远不会提交到 GitHub，
+  所以即使仓库是公开的，你的 Key 也不会泄露。
+  云端（GitHub Actions）则通过仓库 Secrets 注入，同样不落盘。
+
+填好后不需要改任何代码，collector.py 启动时会自动读取并覆盖 config.py 中的空值。
+"""
+
+API_KEYS = {
+    # NASA FIRMS 卫星火点：https://firms.modaps.eosdis.nasa.gov/api/map_key/
+    #   填邮箱后立刻在页面显示 Map Key，是一串 32 位字符
+    "firms": "",
+
+    # EIA 美国能源署：https://www.eia.gov/opendata/register.php
+    #   注册后邮件收到 api_key
+    "eia": "",
+
+    # AISStream 船舶AIS：https://aisstream.io/authenticate
+    #   用 GitHub 或邮箱登录后在 Dashboard 取 API Key
+    "aisstream": "",
+
+    # OpenSky 航班：https://opensky-network.org/ 注册账号
+    #   填用户名和密码（匿名也能用，填了只是提高配额）
+    "opensky_user": "",
+    "opensky_pass": "",
+}
