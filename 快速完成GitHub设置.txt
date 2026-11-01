@@ -1,0 +1,85 @@
+========================================
+  快速完成 GitHub 设置（2分钟）
+========================================
+
+第1步：创建工作流文件
+----------------------
+1. 浏览器打开：https://github.com/win462839-max/-
+2. 点 "Add file" → "Create new file"
+3. 文件名输入（注意前面的点号）：.github/workflows/collect.yml
+4. 把下面这段完整复制粘贴到内容框：
+
+name: Middle East Intel Collector
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect
+        env:
+          ME_FIRMS: ${{ secrets.ME_FIRMS }}
+          ME_EIA: ${{ secrets.ME_EIA }}
+          ME_AISSTREAM: ${{ secrets.ME_AISSTREAM }}
+        run: python collector.py
+      - name: Commit data
+        run: |
+          git config user.name "intel-bot"
+          git config user.email "intel-bot@users.noreply.github.com"
+          git add data/ || true
+          git diff --quiet && git diff --staged --quiet && echo "no change" || git commit -m "intel $(date -u '+%Y-%m-%dT%H:%MZ')"
+          git push || true
+
+  deploy:
+    needs: collect
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+5. 点 "Commit new file..." → 再点 "Commit new file"
+
+第2步：添加密钥
+---------------
+1. 还在同一个仓库页面 → 点顶部 "Settings"
+2. 左侧边栏 → "Secrets and variables" → "Actions"
+3. 点 "New repository secret"，逐个添加：
+
+   Name: ME_FIRMS
+   Secret: fc3143c9900d1ff4cacb09d247bd5a51
+
+   Name: ME_EIA
+   Secret: dqb8Rkm8QzzbP76kfkc7GHjHkhGmCLWTfcNCPqPm
+
+   Name: ME_AISSTREAM
+   Secret: 09f72bf19ce5231f19ef5fb3eaa30d5d4fcf73e4
+
+第3步：启用Pages
+---------------
+1. Settings → "Pages"（左侧边栏）
+2. Source 选 "GitHub Actions"
+3. 完成！
+
+看板地址：https://win462839-max.github.io/-/
