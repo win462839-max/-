@@ -572,9 +572,11 @@ def run_once():
             ff = ex.submit(S.collect_firms, proxy_get)
             fa = ex.submit(S.collect_air, proxy_get)
             fe = ex.submit(S.collect_eia, proxy_get)
+            fs = ex.submit(S.collect_ais, proxy_get)
             sensors["firms"] = ff.result()
             sensors["air"] = fa.result()
             sensors["eia"] = fe.result()
+            sensors["ais"] = fs.result()
         for k, v in sensors.items():
             if v:
                 log(f"  传感[{k}] 已接入")
