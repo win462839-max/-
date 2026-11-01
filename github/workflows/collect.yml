@@ -1,0 +1,49 @@
+name: Middle East Intel Collector
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Collect
+        env:
+          ME_FIRMS: ${{ secrets.ME_FIRMS }}
+          ME_EIA: ${{ secrets.ME_EIA }}
+          ME_AISSTREAM: ${{ secrets.ME_AISSTREAM }}
+        run: python collector.py
+      - name: Commit data
+        run: |
+          git config user.name "intel-bot"
+          git config user.email "intel-bot@users.noreply.github.com"
+          git add data/ || true
+          git diff --quiet && git diff --staged --quiet && echo "no change" || git commit -m "intel $(date -u '+%Y-%m-%dT%H:%MZ')"
+          git push || true
+
+  deploy:
+    needs: collect
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - id: deploy
+        uses: actions/deploy-pages@v4
